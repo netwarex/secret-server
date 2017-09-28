@@ -28,7 +28,7 @@ Now please edit the **.env** file for your MySQL database, then run migrations:
 Usage
 -------------
 
-You can add a secret to your database via send a POST request.
+You can add a secret to your database via sending a POST request.
 
     POST /secret
 Parameters:
@@ -63,7 +63,7 @@ Supported outputs are:
  - json
  - xml
 
-You can retrieve a secret from your database via send a GET request.
+You can retrieve a secret from your database via sending a GET request.
 
     GET /secret/hash-string
 Response:
