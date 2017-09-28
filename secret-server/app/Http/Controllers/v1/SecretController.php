@@ -47,7 +47,7 @@ class SecretController extends Controller
     {
         $validator = \Validator::make($request->all(), [
             'secret' => 'required',
-            'expiresAfterViews' => 'required|numeric|min:1',
+            'expireAfterViews' => 'required|numeric|min:1',
             'expireAfter' => 'required|numeric|min:0'
         ]);
 
@@ -57,7 +57,7 @@ class SecretController extends Controller
 
         $secret = new Secret();
         $secret->secretText = $request->secret;
-        $secret->remainingViews = $request->expiresAfterViews;
+        $secret->remainingViews = $request->expireAfterViews;
         $secret->expiresAt = Carbon::now()->addMinutes($request->expireAfter);
         $secret->save();
 
