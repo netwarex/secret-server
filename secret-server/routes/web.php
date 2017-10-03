@@ -10,10 +10,6 @@
 |
 */
 
-/*$router->get('/', function () use ($router) {
-    return $router->app->version();
-});*/
-
 // API Version 1 Routes
 $ApiV1 = function () use ($router) {
     $router->post('/secret','SecretController@addSecret'); //create secret
