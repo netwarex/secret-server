@@ -1,10 +1,12 @@
 <?php
 namespace App;
 
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
 
 class Secret extends Model
 {
+    public $xmlName = 'Secret';
     public $incrementing = false;
     public $timestamps = false;
 
@@ -20,7 +22,7 @@ class Secret extends Model
         {
             do
             {
-                $model->{$model->getKeyName()} = hash('sha256', microtime().rand(1000,9999));
+                $model->{$model->getKeyName()} = hash('sha256', openssl_random_pseudo_bytes(32));
             }
             while(Secret::where('hash', '=', $model->{$model->getKeyName()})->exists());
 
@@ -31,5 +33,20 @@ class Secret extends Model
     protected function serializeDate(\DateTimeInterface $date)
     {
         return $date->format("Y-m-d\TH:i:s.v\Z");
+    }
+
+    /**
+     * Scope a query to only show valid secret.
+     *
+     * @param \Illuminate\Database\Eloquent\Builder $query
+     * @return \Illuminate\Database\Eloquent\Builder
+     */
+    public function scopeValid($query)
+    {
+        return $query->where('remainingViews', '>', '0')
+                     ->where(function($q) {
+                                 $q->where('expiresAt', '>', Carbon::now())
+                                   ->orWhereRaw('expiresAt = createdAt');
+                             });
     }
 }

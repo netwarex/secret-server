@@ -1,11 +1,14 @@
 <?php
+
 namespace App\Http\Controllers\v1;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
+use App\Events\SecretViewedEvent;
 use App\Helpers\ApiHelper;
 use App\Secret;
+
 class SecretController extends Controller
 {
     /**
@@ -16,20 +19,13 @@ class SecretController extends Controller
      */
     public function getSecretByHash($hash)
     {
-        // Query a secret with hash which exists and not invalid
-        $secret = Secret::where('hash', '=', $hash)
-                        ->where('remainingViews', '>', '0')
-                        ->where(function($q) {
-                                    $q->where('expiresAt', '>', Carbon::now())
-                                      ->orWhereRaw('expiresAt = createdAt');
-                                })
-                        ->first();
+        // Query a secret with hash which exists and valid
+        $secret = Secret::where('hash', $hash)->valid()->first();
 
-        if($secret){
-            $secret->remainingViews--;
-            $secret->save();
-
-            return ApiHelper::response($secret, 'Secret');
+        if($secret)
+        {
+            event(new SecretViewedEvent($secret));
+            return ApiHelper::response($secret);
         }
         else
         {
@@ -51,7 +47,8 @@ class SecretController extends Controller
             'expireAfter' => 'required|numeric|min:0'
         ]);
 
-        if ($validator->fails()) {
+        if ($validator->fails())
+        {
             return ApiHelper::error('Invalid input', 405);
         }
 
@@ -61,6 +58,6 @@ class SecretController extends Controller
         $secret->expiresAt = Carbon::now()->addMinutes($request->expireAfter);
         $secret->save();
 
-        return ApiHelper::response($secret, 'Secret');
+        return ApiHelper::response($secret);
     }
 }
